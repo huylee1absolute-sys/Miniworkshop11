@@ -1,0 +1,44 @@
+@startuml
+title Luồng gọi: cart.accept(new TotalPriceVisitor())
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor Main as M
+participant ":ShoppingCart" as Cart
+participant ":Book" as B
+participant ":Electronics" as E
+participant ":TotalPriceVisitor" as V
+
+M -> V : new TotalPriceVisitor()
+M -> Cart : accept(v)
+activate Cart
+
+loop với mỗi item trong giỏ
+  Cart -> B : accept(v)
+  activate B
+  B -> V : visit(this)  // this là Book
+  activate V
+  V -> B : getTotal()
+  V --> B
+  deactivate V
+  B --> Cart
+  deactivate B
+
+  Cart -> E : accept(v)
+  activate E
+  E -> V : visit(this)  // this là Electronics
+  activate V
+  V -> E : getTotal()
+  V --> E
+  deactivate V
+  E --> Cart
+  deactivate E
+end
+
+Cart --> M
+deactivate Cart
+M -> V : getTotal()
+V --> M : tổng tiền
+@enduml

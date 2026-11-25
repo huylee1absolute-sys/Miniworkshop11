@@ -1,0 +1,87 @@
+@startuml
+title Thiết kế điều chỉnh: thêm DiscountVisitor và TaxVisitor
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class {
+  BackgroundColor<<Element>> #E8F1FB
+  BorderColor<<Element>> #2B6CB0
+  BackgroundColor<<Visitor>> #FDF1E3
+  BorderColor<<Visitor>> #C05621
+  BackgroundColor<<New>> #FEFCBF
+  BorderColor<<New>> #B7791F
+  BackgroundColor<<Structure>> #E9F7EF
+  BorderColor<<Structure>> #2F855A
+}
+
+class ShoppingCart <<Structure>> {
+  - items : List<Item>
+  + add(item : Item)
+  + remove(item : Item)
+  + accept(visitor : ItemVisitor)
+}
+
+abstract class Item <<Element>> {
+  + getTotal() : long
+  + {abstract} accept(visitor : ItemVisitor)
+}
+class Book <<Element>>
+class Electronics <<Element>>
+class Food <<Element>>
+
+interface ItemVisitor <<Visitor>> {
+  + visit(book : Book)
+  + visit(electronics : Electronics)
+  + visit(food : Food)
+}
+
+class TotalPriceVisitor <<Visitor>> {
+  + getTotal() : long
+}
+class PrintVisitor <<Visitor>>
+
+class DiscountVisitor <<New>> {
+  - totalDiscount : long
+  + getTotalDiscount() : long
+}
+class TaxVisitor <<New>> {
+  - totalTax : long
+  + getTotalTax() : long
+}
+
+ShoppingCart o-- "0..*" Item
+Item <|-- Book
+Item <|-- Electronics
+Item <|-- Food
+
+ItemVisitor <|.. TotalPriceVisitor
+ItemVisitor <|.. PrintVisitor
+ItemVisitor <|.. DiscountVisitor
+ItemVisitor <|.. TaxVisitor
+
+Item ..> ItemVisitor : accept(v)
+
+note bottom of DiscountVisitor
+  Giảm giá theo loại hàng
+  (Sách 10%, Điện tử 5%, Thực phẩm 2%)
+end note
+
+note bottom of TaxVisitor
+  Thuế theo loại hàng
+  (Sách 5%, Điện tử 10%, Thực phẩm 8%)
+end note
+
+note right of ItemVisitor
+  Màu vàng = lớp mới thêm.
+  Item và ShoppingCart
+  KHÔNG phải sửa.
+end note
+
+note as N1
+  Nếu thêm loại hàng mới (vd. Clothing):
+  phải thêm visit(Clothing) vào ItemVisitor
+  và sửa cả 4 Visitor.
+end note
+ItemVisitor .. N1
+@enduml

@@ -1,0 +1,85 @@
+@startuml
+title Thiết kế gốc: Giỏ hàng online với Visitor Pattern
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class {
+  BackgroundColor<<Element>> #E8F1FB
+  BorderColor<<Element>> #2B6CB0
+  BackgroundColor<<Visitor>> #FDF1E3
+  BorderColor<<Visitor>> #C05621
+  BackgroundColor<<Structure>> #E9F7EF
+  BorderColor<<Structure>> #2F855A
+}
+
+class ShoppingCart <<Structure>> {
+  - items : List<Item>
+  + add(item : Item)
+  + remove(item : Item)
+  + accept(visitor : ItemVisitor)
+}
+
+abstract class Item <<Element>> {
+  - name : String
+  - price : long
+  - quantity : int
+  + getTotal() : long
+  + {abstract} accept(visitor : ItemVisitor)
+}
+
+class Book <<Element>> {
+  - author : String
+  + accept(visitor : ItemVisitor)
+}
+
+class Electronics <<Element>> {
+  - warrantyMonths : int
+  + accept(visitor : ItemVisitor)
+}
+
+class Food <<Element>> {
+  - expiryDate : String
+  + accept(visitor : ItemVisitor)
+}
+
+interface ItemVisitor <<Visitor>> {
+  + visit(book : Book)
+  + visit(electronics : Electronics)
+  + visit(food : Food)
+}
+
+class TotalPriceVisitor <<Visitor>> {
+  - total : long
+  + visit(book : Book)
+  + visit(electronics : Electronics)
+  + visit(food : Food)
+  + getTotal() : long
+}
+
+class PrintVisitor <<Visitor>> {
+  + visit(book : Book)
+  + visit(electronics : Electronics)
+  + visit(food : Food)
+}
+
+ShoppingCart o-- "0..*" Item : items
+Item <|-- Book
+Item <|-- Electronics
+Item <|-- Food
+
+ItemVisitor <|.. TotalPriceVisitor
+ItemVisitor <|.. PrintVisitor
+
+Item ..> ItemVisitor : accept(v) gọi v.visit(this)
+ShoppingCart ..> ItemVisitor : accept(v) chuyển v cho từng Item
+ItemVisitor ..> Book
+ItemVisitor ..> Electronics
+ItemVisitor ..> Food
+
+note right of ItemVisitor
+  Mỗi thao tác xử lý giỏ hàng
+  là một lớp Visitor riêng,
+  tách rời khỏi các mặt hàng.
+end note
+@enduml
